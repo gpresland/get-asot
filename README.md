@@ -3,12 +3,12 @@
 A State of Trance downloader.
 
 
-# Installation
+## Installation
 
 `npm install -g https://github.com/gpresland/get-asot.git`
 
 
-# Usage
+## Usage
 
 get-asot will download a specified episode to the current working directory.
 

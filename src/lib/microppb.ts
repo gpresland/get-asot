@@ -1,51 +1,38 @@
-/**
- * Link Finder
- *
- * Finds link for ASoT.
- *
- * @author    gpresland
- *
- */
+const BASE_URL: string = `https://${['m', 'i', 'r', 'o', 'p', 'p', 'b', '.', 'c', 'o', 'm'].join('')}/ASOT`;
 
-'use strict';
+import axios from 'axios';
+import cheerio from 'cheerio'
 
-/**
- * Base URL
- * @type {String}
- */
-const URL = `https://${['m', 'i', 'r', 'o', 'p', 'p', 'b', '.', 'c', 'o', 'm'].join('')}/ASOT`;
-
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
-import * as cheerio from 'cheerio';
-import * as request from 'request';
-
-import * as pad from './pad';
+export interface Details {
+  date: Date,
+  downloadUrl: string
+}
 
 export default {
-
   /**
-   * Gets an episode link
-   * @param  {Srting}  episode  The episode number to get the link to
-   * @return {Promise}
+   * Gets an episode link.
+   * @param episode The episode number to get the link to.
+   * @returns
    */
-  async getDetails(episode: string = null): Bluebird<string> {
-    if (episode === null) {
-      throw new TypeError('BAD EPISODE NUMBER');
+  async getDetails(episode: string): Promise<Details> {
+    if (episode === '') {
+      throw new TypeError('Bad episode number.');
     }
-    const body = await this._getPage(episode);
-    const date = this._getDate(body);
-    const link = this._getDirectLink(body);
-    return {
-      date,
-      link
-    };
+    return new Promise<Details>(async (resolve, reject) => {
+      const body = await this._getPage(episode);
+      const date = this._getDate(body);
+      const link = this._getDirectLink(body);
+      resolve({
+        date: date,
+        downloadUrl: link
+      });
+    });
   },
 
   /**
    * Gets the direct link
-   * @param  {String}  body  The body of the page
-   * @return {String}
+   * @param body The body of the page.
+   * @returns
    */
   _getDirectLink(body: string) {
     const $ = cheerio.load(body);
@@ -54,11 +41,11 @@ export default {
   },
 
   /**
-   * Get episode ISO8601 date
-   * @param  {String}  body  The body of the page
-   * @return {String}
+   * Get episode date.
+   * @param body The body of the page.
+   * @returns The date of release of the episode.
    */
-  _getDate(body: string) {
+  _getDate(body: string): Date {
     const MONTHS = [
       'January',
       'February',
@@ -74,44 +61,49 @@ export default {
       'December'
     ];
     const $ = cheerio.load(body);
-    const infoTable = $('#info_table > tr > td').html();
-    const fields = infoTable.split('<br>')
+    const table: string | null = $('#info_table > tr > td').html();
+    if (table == null) {
+      throw new Error('Cannot parse body.');
+    }
+    const fields: string[] = table.split('<br>')
       .map((field) => field.replace(/[\r\n\t]/g, ''))
       .map((field) => field.replace(/(<([^>]+)>)/ig, ''));
-    const dateItems = fields.find((field) => field.includes('Date Of Release'))
-      .replace('Date Of Release:', '')
+    const dateString: string = fields[2];
+    const datePieces: string[] = dateString
+      .replace('Release Date:', '')
       .replace(',', '')
       .trim()
       .split(' ');
-    let year = dateItems[2];
-    let month = MONTHS.findIndex((month) => month === dateItems[0]) + 1;
-    let day = dateItems[1];
-    month = pad.left(month, 2, 0);
-    day = pad.left(day, 2, 0);
-    return { year, month, day };
+    const year: number = parseInt(datePieces[2]);
+    const month: number = MONTHS.findIndex(month => month === datePieces[0]);
+    const date: number = parseInt(datePieces[1]);
+    return new Date(year, month, date);
   },
 
   /**
-   * Gets an HTML page for an episode
-   * @param  {Srting}  episode  The episode number to get the link to
-   * @return {Promise}
+   * Gets an HTML page for an episode.
+   * @param episode The episode number to get the link to.
+   * @returns
    */
-  _getPage(episode: string): Bluebird<string> {
-    return new Bluebird((resolve, reject) => {
-      request({
-        method: 'GET',
-        uri: `${URL}/${episode}`
-      }, function (error, response, body) {
-        if (error) return reject(error);
-        resolve(body);
-      });
+  _getPage(episode: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const url: string = `${BASE_URL}/${episode}`;
+      axios.get(url)
+        .then(response => {
+          if (response.status === 200) {
+            resolve(response.data);
+          } else {
+            reject();
+          }
+        })
+        .catch(err => reject(err));
     });
   },
 
   /**
-   * Gets the OneDrive link
-   * @param  {String}  body  The body of the page
-   * @return {String}
+   * Gets the OneDrive link.
+   * @param body The body of the page.
+   * @returns
    */
   _getOneDriveLink(body: string) {
     const $ = cheerio.load(body);

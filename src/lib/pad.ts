@@ -1,15 +1,4 @@
 /**
- * Pad
- *
- * Padding functions.
- *
- * @author    gPresland
- *
- */
-
-'use strict';
-
-/**
  * Pad left
  *
  * @param  {*}       value   The value to pad
@@ -17,7 +6,7 @@
  * @param  {String}  char    The character to use for padding
  * @return {String}
  */
-exports.left = function (value: string | number, length: number, char: string | number): string {
+export const left = function (value: string | number, length: number, char: string | number): string {
   char = `${char}`;
   return (char.repeat(length) + value).slice(-length);
 };
@@ -30,7 +19,9 @@ exports.left = function (value: string | number, length: number, char: string | 
  * @param  {String}  char    The character to use for padding
  * @return {String}
  */
-exports.right = function (value: string | number, length: number, char: string | number): string {
+export const right = function (value: string | number, length: number, char: string | number): string {
   char = `${char}`;
   return (value + char.repeat(length)).substr(0, length);
 };
+
+export default { left, right };

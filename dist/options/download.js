@@ -1,12 +1,4 @@
-/**
- * Get ASoT
- *
- * Get A State of Trance episode.
- *
- * @author gpresland
- *
- */
-'use strict';
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -16,14 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -42,46 +34,45 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
-var pkg = require('../package.json');
-var fs = require("fs");
-var program = require("commander");
-var path = require("path");
-var request = require("request");
-var progress = require("request-progress");
-var microppb_1 = require("./lib/microppb");
-program
-    .version(pkg.version)
-    .option('-e, --episode <n>', 'download ASoT episode number')
-    .parse(process.argv);
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var lodash_1 = require("lodash");
+var axios_1 = __importDefault(require("axios"));
+var fs_1 = __importDefault(require("fs"));
+var path_1 = __importDefault(require("path"));
+var microppb_1 = __importDefault(require("../lib/microppb"));
+/**
+ * Downloads an episode to disk.
+ * @param episode The episode number to download.
+ */
 function download(episode) {
     return __awaiter(this, void 0, void 0, function () {
-        var details, filename, filepath;
+        var details, yearString, monthString, dateString, fileName, filePath;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, microppb_1["default"].getDetails(program.episode)];
+                case 0: return [4 /*yield*/, microppb_1.default.getDetails(episode)];
                 case 1:
                     details = _a.sent();
-                    filename = "Armin van Buuren - A State of Trance " + program.episode + " - " + details.date.day + "." + details.date.month + "." + details.date.year + ".mp3";
-                    filepath = path.resolve(process.cwd(), filename);
-                    progress(request.get(details.link), {})
-                        .on('progress', function (state) {
-                        var percentComplete = Math.round(state.percent * 100).toString();
-                        process.stdout.clearLine();
-                        process.stdout.cursorTo(0);
-                        process.stdout.write("Downloading: " + percentComplete + "%");
+                    yearString = lodash_1.padStart(details.date.getFullYear().toString(), 4, '0');
+                    monthString = lodash_1.padStart(details.date.getMonth().toString(), 2, '0');
+                    dateString = lodash_1.padStart(details.date.getDate().toString(), 2, '0');
+                    fileName = "Armin van Buuren - A State of Trance " + episode + " - " + dateString + "." + monthString + "." + yearString + ".mp3";
+                    filePath = path_1.default.resolve(process.cwd(), fileName);
+                    console.log("Downloading episode " + episode + " as '" + fileName + "'..");
+                    axios_1.default({
+                        url: details.downloadUrl,
+                        method: 'GET',
+                        responseType: 'stream',
                     })
-                        .on('error', function (err) {
-                        //
+                        .then(function (response) {
+                        response.data.pipe(fs_1.default.createWriteStream(filePath));
                     })
-                        .on('end', function () {
-                        //
-                    })
-                        .pipe(fs.createWriteStream(filepath));
+                        .catch(function (err) { return console.log(err); });
                     return [2 /*return*/];
             }
         });
     });
 }
-;
-download(program.episode);
+exports.download = download;

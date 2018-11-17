@@ -1,12 +1,5 @@
-/**
- * Pad
- *
- * Padding functions.
- *
- * @author    gPresland
- *
- */
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Pad left
  *
@@ -31,3 +24,4 @@ exports.right = function (value, length, char) {
     char = "" + char;
     return (value + char.repeat(length)).substr(0, length);
 };
+exports.default = { left: exports.left, right: exports.right };
