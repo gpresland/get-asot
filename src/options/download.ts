@@ -12,7 +12,7 @@ import downloader from '../lib/microppb';
 export async function download(episode: string) {
   const details = await downloader.getDetails(episode);
   const yearString: string = padStart(details.date.getFullYear().toString(), 4, '0');
-  const monthString = padStart(details.date.getMonth().toString(), 2, '0');
+  const monthString = padStart((details.date.getMonth() + 1).toString(), 2, '0');
   const dateString = padStart(details.date.getDate().toString(), 2, '0');
   const fileName = `Armin van Buuren - A State of Trance ${episode} - ${dateString}.${monthString}.${yearString}.mp3`;
   const filePath = path.resolve(process.cwd(), fileName);

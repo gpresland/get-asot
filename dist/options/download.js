@@ -56,7 +56,7 @@ function download(episode) {
                 case 1:
                     details = _a.sent();
                     yearString = lodash_1.padStart(details.date.getFullYear().toString(), 4, '0');
-                    monthString = lodash_1.padStart(details.date.getMonth().toString(), 2, '0');
+                    monthString = lodash_1.padStart((details.date.getMonth() + 1).toString(), 2, '0');
                     dateString = lodash_1.padStart(details.date.getDate().toString(), 2, '0');
                     fileName = "Armin van Buuren - A State of Trance " + episode + " - " + dateString + "." + monthString + "." + yearString + ".mp3";
                     filePath = path_1.default.resolve(process.cwd(), fileName);
